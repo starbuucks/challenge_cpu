@@ -3,11 +3,7 @@
 #pragma pack(push, 1)
 
 struct __reg{
-    char r0;
-    char r1;
-    char r2;
-    char r3;
-    char rnd;
+    char r[4];
     char pc;
 };
 

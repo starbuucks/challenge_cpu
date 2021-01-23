@@ -34,7 +34,7 @@ int choice(){
 void make_process(char * program, char* argv[], int argc){
     printf("program : %s\n", program); // test
 
-    struct context* new_ctx = (struct context*)malloc(sizeof(struct context));
+    struct context* new_ctx = (struct context*)calloc(1, sizeof(struct context));
     
     run_process(new_ctx, program, argv, argc);
 
