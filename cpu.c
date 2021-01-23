@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include "process.h"
+
 char Flag[] = "bob{F+R_47t@ck}";   // bob{###flag###}
 char* cache;
 
@@ -31,6 +33,14 @@ int choice(){
 
 void make_process(char * program, char* argv[], int argc){
     printf("program : %s\n", program); // test
+
+    struct context* new_ctx = (struct context*)malloc(sizeof(struct context));
+    
+    run_process(new_ctx, program, argv, argc);
+
+    write(1, "process terminated\n", 19);
+
+    free(new_ctx);
 }
 
 int main(){
