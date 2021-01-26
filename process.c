@@ -5,6 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 
+struct __L2cache* llc;
+
 void error(char* from, char* description){
     printf("[Error] %s : %s\n", from ,description);
     fflush(stdout);
@@ -19,18 +21,8 @@ char read_memory(ctx* ctx, unsigned int addr){
     char tag, idx;
     if (addr >= 0x100)
         error("read_memory", "invalid memory access");
-    tag = (addr & 0x80) >> 7;
-    idx = addr & 0x7F;
-    if (ctx->cache.line[idx].tag == tag){
-        // cache hit
-        ret = ctx->cache.line[idx].data;
-    }
-    else{
-        // cache miss
-        sleep(0.5);
-        ret = ctx->cache.line[idx].data = ctx->memory[addr];
-        ctx->cache.line[idx].tag = tag;
-    }
+    
+    
     return ret;
 }
 
@@ -40,9 +32,13 @@ void load_memory(ctx* ctx, int addr, char* src, unsigned int len){
     memcpy(ctx->memory + addr, src, len);
 }
 
-void run_process(ctx* ctx, char* program, char* argv[], int argc){
+void run_process(ctx* ctx, llc* l2cache, char* program, char* argv[], int argc){
     int i;
     char op1, op2;
+
+    llc = l2cache;
+    ctx->l1cache = getL1cache();
+
     load_memory(ctx, 0, program, strlen(program));
     for(i=0; i<argc; i++)
         load_memory(ctx, 0x80 + 0x10 * i, argv[i], 0x10);

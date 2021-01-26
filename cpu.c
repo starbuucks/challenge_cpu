@@ -7,9 +7,10 @@
 #include <fcntl.h>
 
 #include "process.h"
+#include "cache.h"
 
-char Flag[] = "bob{F+R_47t@ck}";   // bob{###flag###}
-char* cache;
+char Flag[] = "bob{s@mplflag}";
+struct __L2cache* llc;
 
 void welcome(){
     printf("Hello Programmer!\n");
@@ -31,12 +32,13 @@ int choice(){
     return atoi(buf);
 }
 
-void make_process(char * program, char* argv[], int argc){
+void make_process(char * program, char core, char* argv[], int argc){
     printf("program : %s\n", program); // test
 
     struct context* new_ctx = (struct context*)calloc(1, sizeof(struct context));
+    new_ctx->core = core;
     
-    run_process(new_ctx, program, argv, argc);
+    run_process(new_ctx, llc, program, argv, argc);
 
     write(1, "process terminated\n", 19);
 
@@ -55,7 +57,7 @@ int main(){
     int fd, i, len;
     char tmp;
 
-    cache = (char*)malloc(0x80);
+    llc = getL2cache();
 
     if(0 < (fd = open("enc.program", O_RDONLY))){
         read(fd, enc_program, 0x80);
@@ -72,8 +74,7 @@ int main(){
     welcome();
 
     while(chk){
-        for(i=0; i<3; i++)
-            memset(arg[i], 0, 0x10);
+        for(i=0; i<3; i++) memset(arg[i], 0, 0x10);
         memset(buf, 0, 0x100);
         memset(own_program, 0, 0x80);
         switch(choice()){
@@ -81,7 +82,7 @@ int main(){
             write(1, "msg to be encrypted : ", 22);
             read(0, arg[0], 0x10);
             memcpy(arg[1], Flag, strlen(Flag));
-            make_process(enc_program, arg, 2);
+            make_process(enc_program, 1, arg, 2);
             break;
 
             case 2:
@@ -105,7 +106,7 @@ int main(){
                 fflush(stdout);
                 read(0, arg[i], 0x10);
             }
-            make_process(own_program, arg, arc);
+            make_process(own_program, 2, arg, arc);
             break;
 
             case 3:
