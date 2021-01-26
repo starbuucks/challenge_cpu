@@ -6,19 +6,19 @@
 
 struct __L2cache* getL2cache(){
     int i;
-    struct __L2cache* cache = (struct __L2cache*)malloc(sizeof(struct __L2cahce));
+    struct __L2cache* cache = (struct __L2cache*)malloc(sizeof(struct __L2cache));
     for(i=0; i<0x80; i++){
-        cache->line[core] = '\x00';
-        cache->line[tag] = '\xFF';
+        cache->line[i].core = '\x00';
+        cache->line[i].tag = '\xFF';
     }
     return cache;
 }
 
 struct __L1cache* getL1cache(){
     int i;
-    struct __L1cache* cache = (struct __L1cache*)malloc(sizeof(struct __L1cahce));
+    struct __L1cache* cache = (struct __L1cache*)malloc(sizeof(struct __L1cache));
     for(i=0; i<0x40; i++){
-        cache->line[tag] = '\xFF';
+        cache->line[i].tag = '\xFF';
     }
     return cache;
 }
@@ -57,9 +57,9 @@ void load_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char dat
     idx = addr & 0x7F;
     l2cache->line[idx].tag = tag;
     if(shared(addr))
-        l2cache->line[core] = 0x11;
+        l2cache->line[idx].core = 0x11;
     else
-        l2cache->line[core] = core;
+        l2cache->line[idx].core = core;
     l2cache->line[idx].data = data;
     
     // load l1cache

@@ -15,7 +15,7 @@ struct __L2line{
     char core;      // which core's memory? set the bit (01/10/11<-shared library)
     char tag;       // 0xFF if the line is not used
     char data;
-}
+};
 
 typedef struct __L1cache{
     struct __L1line line[0x40];

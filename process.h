@@ -18,4 +18,4 @@ typedef struct context{
     char memory[0x100];
 } ctx;
 
-void run_process(ctx* ctx, char* program, char* argv[], int argc);
+void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc);

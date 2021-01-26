@@ -7,7 +7,7 @@
 
 struct __L2cache* llc;
 
-void valid_address(unsigned addr){
+int valid_address(unsigned addr){
     return addr >= 0x00 && addr < 0x100;
 }
 
@@ -44,18 +44,18 @@ void print_register(ctx* ctx){
     int i;
     printf("[Register Info]\n");
     for (i=0; i<4; i++){
-        printf("r%d : %02X\n", ctx->reg.r[i]);
+        printf("r%d : %02X\n", i, ctx->reg.r[i]);
     }
     printf("pc : %02X\n", ctx->reg.pc);
     fflush(stdout);
 }
 
-void run_process(ctx* ctx, llc* l2cache, char* program, char* argv[], int argc){
+void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
     int i;
     char op1, op2;
 
     llc = l2cache;
-    ctx->l1cache = getL1cache();
+    ctx->cache = getL1cache();
 
     load_memory(ctx, 0, program, strlen(program));
     for(i=0; i<argc; i++)
@@ -72,7 +72,7 @@ void run_process(ctx* ctx, llc* l2cache, char* program, char* argv[], int argc){
             break;
 
             case 0x20:  // mov reg, mem
-            ctx->reg.r[op1 & 0x03] = read_memory(op2);
+            ctx->reg.r[op1 & 0x03] = read_memory(ctx, op2);
             break;
 
             case 0x30:  // not reg
