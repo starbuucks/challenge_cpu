@@ -17,13 +17,17 @@ void write_memory(ctx* ctx, int addr, char data){
 }
 
 char read_memory(ctx* ctx, unsigned int addr){
-    char ret;
+    char data;
     char tag, idx;
     if (addr >= 0x100)
         error("read_memory", "invalid memory access");
-    
-    
-    return ret;
+    if(!readCache(ctx->cache, llc, ctx->core, addr, &data)){
+        sleep(0.5);
+        data = ctx->memory[addr];
+        loadCache(ctx->cache, llc, ctx->core, addr, data);
+    }
+
+    return data;
 }
 
 void load_memory(ctx* ctx, int addr, char* src, unsigned int len){

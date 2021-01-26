@@ -86,6 +86,9 @@ int main(){
             break;
 
             case 2:
+            write(1, "[Caution] memory[0x20] ~ memory[0x7F] is for shared library\n", 60);
+            write(1, "[Caution] Page fault is not implemented\n", 40);
+            write(1, "Now start coding !!\n", 20);
             write(1, "program code (in hex) : ", 25);
             memset(buf, 0, 0x100);
             len = read(0, buf, 0x100);

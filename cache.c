@@ -23,6 +23,10 @@ struct __L1cache* getL1cache(){
     return cache;
 }
 
+int shared(unsigned int addr){
+    return addr >= 0x20 && addr < 0x80;
+}
+
 int readCache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char* out){
 
     char tag, idx;
@@ -43,4 +47,24 @@ int readCache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char* out)
     }
 
     return CACHE_MISS;
+}
+
+void loadCache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char data){
+    char tag, idx;
+
+    // load l2cache
+    tag = (addr & 0x80) >> 7;
+    idx = addr & 0x7F;
+    l2cache->line[idx].tag = tag;
+    if(shared(addr))
+        l2cache->line[core] = 0x11;
+    else
+        l2cache->line[core] = core;
+    l2cache->line[idx].data = data;
+    
+    // load l1cache
+    tag = (addr & 0xC0) >> 6;
+    idx = addr & 0x3F;
+    l1cache->line[idx].tag = tag;
+    l1cache->line[idx].data = data;
 }
