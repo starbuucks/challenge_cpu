@@ -29,4 +29,5 @@ typedef struct __L2cache{
 
 struct __L2cache* getL2cache();
 struct __L1cache* getL1cache();
-int readCache(l1* l1cache, l2* l2cache, unsigned int addr, char* out);
+int read_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char* out);
+void load_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char data);

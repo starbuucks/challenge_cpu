@@ -27,7 +27,7 @@ int shared(unsigned int addr){
     return addr >= 0x20 && addr < 0x80;
 }
 
-int readCache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char* out){
+int read_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char* out){
 
     char tag, idx;
     // read l1cache
@@ -49,7 +49,7 @@ int readCache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char* out)
     return CACHE_MISS;
 }
 
-void loadCache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char data){
+void load_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char data){
     char tag, idx;
 
     // load l2cache
