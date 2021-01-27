@@ -34,13 +34,14 @@ int choice(){
 
 void make_process(char * program, char core, char* argv[], int argc){
     printf("program : %s\n", program); // test
+    write(1, "\n------ process  started ------\n", 32);
 
     struct context* new_ctx = (struct context*)calloc(1, sizeof(struct context));
     new_ctx->core = core;
     
     run_process(new_ctx, llc, program, argv, argc);
 
-    write(1, "process terminated\n", 19);
+    write(1, "------process terminated------\n", 31);
 
     free(new_ctx);
 }
@@ -65,7 +66,6 @@ int main(){
     }
     else{
         printf("FILE OPEN ERROR\n");
-        // exit(-1); // test
     }
 
     for(i=0; i<3; i++)
