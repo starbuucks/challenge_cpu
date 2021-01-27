@@ -44,14 +44,14 @@ void print_register(ctx* ctx){
     int i;
     printf("[Register Info]\n");
     for (i=0; i<4; i++){
-        printf("r%d : %02X\n", i, ctx->reg.r[i]);
+        printf("r%d : %02X\n", i, (unsigned char)ctx->reg.r[i]);
     }
-    printf("pc : %02X\n", ctx->reg.pc);
+    printf("pc : %02X\n", (unsigned char)ctx->reg.pc);
     fflush(stdout);
 }
 
-int need_more_op(char op1){
-    return op1 >= 0x10 && op1 < 0xA0;
+int need_more_op(unsigned char op1){
+    return (op1 >= 0x10 && op1 < 0x90) || (op1 >= 0xd0 && op1 < 0xf0);
 }
 
 void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
@@ -66,7 +66,7 @@ void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
         load_memory(ctx, 0x80 + 0x10 * i, argv[i], 0x10);
 
     while(op1 = read_memory(ctx, ctx->reg.pc++)){
-        
+
         if (need_more_op(op1)) op2 = read_memory(ctx, ctx->reg.pc++);
         
         switch(op1 & 0xF0){
@@ -81,36 +81,36 @@ void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
             ctx->reg.r[op1 & 0x03] = read_memory(ctx, op2);
             break;
 
-            case 0x30:  // add reg, reg
+            case 0x30:  // mov mem, reg
+            write_memory(ctx, op2, ctx->reg.r[op1 & 0x03]);
+            break;
+
+            case 0x40:  // add reg, reg
             ctx->reg.r[op1 & 0x03] += ctx->reg.r[op2 & 0x03];
             break;
 
-            case 0x40:  // sub reg, reg
+            case 0x50:  // sub reg, reg
             ctx->reg.r[op1 & 0x03] -= ctx->reg.r[op2 & 0x03];
             break;
 
-            case 0x50:  // xor reg, reg
+            case 0x60:  // xor reg, reg
             ctx->reg.r[op1 & 0x03] ^= ctx->reg.r[op2 & 0x03];
             break;
 
-            case 0x60: // and reg, reg
-            ctx->reg.r[op1 & 0x03] >>= ctx->reg.r[op2 & 0x03];
+            case 0x70: // and reg, reg
+            ctx->reg.r[op1 & 0x03] &= ctx->reg.r[op2 & 0x03];
             break;
 
-            case 0x70: // or reg, reg
-            ctx->reg.r[op1 & 0x03] >>= ctx->reg.r[op2 & 0x03];
+            case 0x80: // or reg, reg
+            ctx->reg.r[op1 & 0x03] |= ctx->reg.r[op2 & 0x03];
             break;
 
-            case 0x80: // shl reg, reg
-            ctx->reg.r[op1 & 0x03] <<= ctx->reg.r[op2 & 0x03];
-            break;
-
-            case 0x90: // shr reg, reg
-            ctx->reg.r[op1 & 0x03] >>= ctx->reg.r[op2 & 0x03];
+            case 0x90: // clflush
+            
             break;
 
             case 0xA0:  // not reg
-            ~ ctx->reg.r[op1 & 0x03];
+            ctx->reg.r[op1 & 0x03] = ~ ctx->reg.r[op1 & 0x03];
             break;
 
             case 0xB0:  // enc reg
@@ -123,12 +123,12 @@ void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
 
             case 0xD0:  // jz r[0] pc_offset
             if (!ctx->reg.r[0])
-                ctx->reg.pc += ctx->reg.r[op2 & 0x03];
+                ctx->reg.pc += op2;
             break;
 
             case 0xE0:  // jnz r[0] pc_offset
             if (ctx->reg.r[0])
-                ctx->reg.pc += ctx->reg.r[op2 & 0x03];
+                ctx->reg.pc += op2;
             break;
 
             case 0xF0:  // show register status

@@ -15,3 +15,6 @@ cache.o: cache.c cache.h
 clean:
 	rm -f cpu
 	rm -f *.o
+	rm -f *.txt
+	rm -f ./.gdb_history
+	

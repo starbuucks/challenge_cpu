@@ -1,110 +1,116 @@
 # python2 disassembler.py
 
-def print_instruction(n, ins, desc):
-    print('%02x %-5s %s'%(n, ins.encode('hex'), desc))
+ins_num = 0
 
-def exit(n=0):
-    ret = '\x00\x00'
-    print_instruction(n, ret, 'exit')
+def print_instruction(ins, desc):
+    global ins_num
+    print('%02x %-5s %s'%(ins_num, ins.encode('hex'), desc))
+    ins_num += len(ins.encode('hex')) / 2
+
+def _exit(n=0):
+    ret = '\x00'
+    print_instruction(ret, 'exit')
     return ret
 
-def _mov(op1, op2, n=0, reg=True):
+def _mov(op1, op2, reg=True, write=False):
     
     src = ''
-    if(reg):
-        ret = chr(0x10 & op1) + chr(op2)
-        src = 'r%d'%op2
+    if(write):
+        ret = chr(0x30 | op2) + chr(op1)
+        src = 'mem[%02x], r%d'%(op1, op2)
+    elif(reg):
+        ret = chr(0x10 | op1) + chr(op2)
+        src = 'r%d, r%d'%(op1, op2)
     else:
-        ret = chr(0x20 & op1) + chr(op2)
-        src = 'mem[%02x]'%op2
+        ret = chr(0x20 | op1) + chr(op2)
+        src = 'r%d, mem[%02x]'%(op1, op2)
     
-    print_instruction(n, ret, 'mov r%d, %s'%(op1, src))
+    print_instruction(ret, 'mov %s'%src)
     return ret
 
-def _add(r1, r2, n=0):
-    ret = chr(0x30 & r1) + chr(r2)
-    print_instruction(n, ret, 'add r%d, r%d'%(r1, r2))
+def _add(r1, r2):
+    ret = chr(0x40 | r1) + chr(r2)
+    print_instruction(ret, 'add r%d, r%d'%(r1, r2))
     return ret
 
-def _sub(r1, r2, n=0):
-    ret = chr(0x40 & r1) + chr(r2)
-    print_instruction(n, ret, 'sub r%d, r%d'%(r1, r2))
+def _sub(r1, r2):
+    ret = chr(0x50 | r1) + chr(r2)
+    print_instruction(ret, 'sub r%d, r%d'%(r1, r2))
     return ret
 
-def _xor(r1, r2, n=0):
-    ret = chr(0x50 & r1) + chr(r2)
-    print_instruction(n, ret, 'xor r%d, r%d'%(r1, r2))
+def _xor(r1, r2):
+    ret = chr(0x60 | r1) + chr(r2)
+    print_instruction(ret, 'xor r%d, r%d'%(r1, r2))
     return ret
 
-def _and(r1, r2, n=0):
-    ret = chr(0x60 & r1) + chr(r2)
-    print_instruction(n, ret, 'and r%d, r%d'%(r1, r2))
+def _and(r1, r2):
+    ret = chr(0x70 | r1) + chr(r2)
+    print_instruction(ret, 'and r%d, r%d'%(r1, r2))
     return ret
 
-def _or(r1, r2, n=0):
-    ret = chr(0x70 & r1) + chr(r2)
-    print_instruction(n, ret, 'or r%d, r%d'%(r1, r2))
+def _or(r1, r2):
+    ret = chr(0x80 | r1) + chr(r2)
+    print_instruction(ret, 'or r%d, r%d'%(r1, r2))
     return ret
 
-def _shl(r1, r2, n=0):
-    ret = chr(0x80 & r1) + chr(r2)
-    print_instruction(n, ret, 'shl r%d, r%d'%(r1, r2))
+def _clflush():
+    ret = chr(0x99)
+    print_instruction(ret, 'clflush')
     return ret
 
-def _shr(r1, r2, n=0):
-    ret = chr(0x90 & r1) + chr(r2)
-    print_instruction(n, ret, 'shr r%d, r%d'%(r1, r2))
+def _not(reg):
+    ret = chr(0xa0 | reg)
+    print_instruction(ret, 'not r%d'%reg)
     return ret
 
-def _not(reg, n=0):
-    ret = chr(0xa0 & reg) + '\x00'
-    print_instruction(n, ret, 'not r%d'%reg)
+def _enc(reg):
+    ret = chr(0xb0 | reg)
+    print_instruction(ret, 'enc r%d'%reg)
     return ret
 
-def _enc(reg, n=0):
-    ret = chr(0xb0 & reg) + '\x00'
-    print_instruction(n, ret, 'enc r%d'%reg)
+def _dec(reg):
+    ret = chr(0xc0 | reg)
+    print_instruction(ret, 'dec r%d'%reg)
     return ret
 
-def _dec(reg, n=0):
-    ret = chr(0xc0 & reg) + '\x00'
-    print_instruction(n, ret, 'dec r%d'%reg)
-    return ret
-
-def _jz(offset, n=0):
+def _jz(offset):
     if offset >= 0x80:
         print('-0x7F <= offset <= +0x7F // check it again!')
         return
     if offset < 0:
         offset += 0x100
     ret = chr(0xd0) + chr(offset)
-    print_instruction(n, ret, 'jz %02X'%offset)
+    print_instruction(ret, 'jz %02X'%offset)
     return ret
 
-def _jnz(offset, n=0):
+def _jnz(offset):
     if offset >= 0x80:
         print('-0x7F <= offset <= +0x7F // check it again!')
         return
     if offset < 0:
         offset += 0x100
     ret = chr(0xe0) + chr(offset)
-    print_instruction(n, ret, 'jnz %02X'%offset)
+    print_instruction(ret, 'jnz %02X'%offset)
     return ret
 
 def _show_register(n=0):
     ret = '\xFF'
-    print_instruction(n, ret, 'show_register')
+    print_instruction(ret, 'show_register')
     return ret
 
 if __name__ == '__main__':
     print('compile the encryption program . . .\n')
     program = ''
-    program += _show_register(n=0)
-    program += _mov(0, 0x80, n=1, reg=False)
-    program += _mov(1, 0x81, n=3, reg=False)
-    program += _mov(2, 0x82, n=5, reg=False)
-    program += _mov(3, 0x83, n=7, reg=False)
-    program += _show_register(n=9)
+    program += _show_register()
+    program += _mov(0, 0x80, reg=False)
+    program += _mov(1, 0x81, reg=False)
+    program += _sub(0, 1)
+    program += _show_register()
+    program += _dec(0)
+    program += _jz(-4)
+    program += _mov(1, 0x81, reg=False)
+    program += _show_register()
+    program += _exit()
 
     f = open('enc.program', 'w')
     f.write(program)
