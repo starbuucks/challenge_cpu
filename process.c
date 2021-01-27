@@ -40,6 +40,10 @@ void load_memory(ctx* ctx, unsigned char addr, char* src, unsigned int len){
     memcpy(ctx->memory + addr, src, len);
 }
 
+void clflush(ctx* ctx){
+    
+}
+
 void print_register(ctx* ctx){
     int i;
     printf("[Register Info]\n");
@@ -106,7 +110,7 @@ void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
             break;
 
             case 0x90: // clflush
-            
+            clflush(ctx);
             break;
 
             case 0xA0:  // not reg

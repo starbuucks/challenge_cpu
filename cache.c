@@ -43,10 +43,19 @@ int read_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char* out
     idx = addr & 0x7F;
     if ((l2cache->line[idx].core & core) && (l2cache->line[idx].tag == tag)){   // cache hit
         *out = l2cache->line[idx].data;
+        load_l1cache(l1cache, addr, data);
         return CACHE_HIT_L2;
     }
 
     return CACHE_MISS;
+}
+
+void load_l1cache(l1* l1cache, unsigned int addr, char data){
+
+    tag = (addr & 0xC0) >> 6;
+    idx = addr & 0x3F;
+    l1cache->line[idx].tag = tag;
+    l1cache->line[idx].data = data;
 }
 
 void load_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char data){
@@ -63,8 +72,5 @@ void load_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char dat
     l2cache->line[idx].data = data;
     
     // load l1cache
-    tag = (addr & 0xC0) >> 6;
-    idx = addr & 0x3F;
-    l1cache->line[idx].tag = tag;
-    l1cache->line[idx].data = data;
+    load_l1cache(l1cache, addr, data);
 }
