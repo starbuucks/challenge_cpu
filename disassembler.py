@@ -99,7 +99,12 @@ def _show_register(n=0):
 if __name__ == '__main__':
     print('compile the encryption program . . .\n')
     program = ''
-    program += _show_register()
+    program += _show_register(n=0)
+    program += _mov(0, 0x80, n=1, reg=False)
+    program += _mov(1, 0x81, n=3, reg=False)
+    program += _mov(2, 0x82, n=5, reg=False)
+    program += _mov(3, 0x83, n=7, reg=False)
+    program += _show_register(n=9)
 
     f = open('enc.program', 'w')
     f.write(program)

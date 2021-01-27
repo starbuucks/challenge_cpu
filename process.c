@@ -7,7 +7,7 @@
 
 struct __L2cache* llc;
 
-int valid_address(unsigned addr){
+int valid_address(unsigned char addr){
     return addr >= 0x00 && addr < 0x100;
 }
 
@@ -16,11 +16,11 @@ void error(char* from, char* description){
     fflush(stdout);
 }
 
-void write_memory(ctx* ctx, unsigned int addr, char data){
+void write_memory(ctx* ctx, unsigned char addr, char data){
     error("write_memory", "not implemented");
 }
 
-char read_memory(ctx* ctx, unsigned int addr){
+char read_memory(ctx* ctx, unsigned char addr){
     char data;
     char tag, idx;
     if (!valid_address(addr))
@@ -34,7 +34,7 @@ char read_memory(ctx* ctx, unsigned int addr){
     return data;
 }
 
-void load_memory(ctx* ctx, unsigned int addr, char* src, unsigned int len){
+void load_memory(ctx* ctx, unsigned char addr, char* src, unsigned int len){
     if (!valid_address(addr) || !valid_address(addr + len - 1))
         error("load_memory", "invalid memory access");
     memcpy(ctx->memory + addr, src, len);
