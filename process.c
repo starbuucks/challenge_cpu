@@ -41,7 +41,7 @@ void load_memory(ctx* ctx, unsigned char addr, char* src, unsigned int len){
 }
 
 void clflush(ctx* ctx){
-    flsuhL1(ctx->cache);
+    flushL1(ctx->cache);
     flushL2(llc);
 }
 
@@ -62,11 +62,15 @@ int need_more_op(unsigned char op1){
 void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
     int i;
     char op1, op2;
+    char* random_library;
 
     llc = l2cache;
     ctx->cache = getL1cache();
+    random_library = (char*)malloc(0x60);
 
     load_memory(ctx, 0, program, strlen(program));
+    load_memory(ctx, 0x20, random_library, 0x60);
+    free(random_library);
     for(i=0; i<argc; i++)
         load_memory(ctx, 0x80 + 0x10 * i, argv[i], 0x10);
 
@@ -78,8 +82,13 @@ void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
             case 0x00:  // exit
             return;
 
-            case 0x10:  // mov reg, reg
-            ctx->reg.r[op1 & 0x03] = ctx->reg.r[op2 & 0x03];
+            case 0x10:
+            if(op1 & 0x08)
+                ctx->reg.r[op1 & 0x03] = op2;
+            else if(op2 & 0xF0)  // mov reg, [reg]
+                ctx->reg.r[op1 & 0x03] = read_memory(ctx, ctx->reg.r[op2 & 0x03]);
+            else            // mov reg, reg
+                ctx->reg.r[op1 & 0x03] = ctx->reg.r[op2 & 0x03];
             break;
 
             case 0x20:  // mov reg, mem
@@ -126,13 +135,14 @@ void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
             ctx->reg.r[op1 & 0x03]--;
             break;
 
-            case 0xD0:  // jz r[0] pc_offset
-            if (!ctx->reg.r[0])
-                ctx->reg.pc += op2;
+            case 0xD0:  // jmp pc_offset
+            ctx->reg.pc += op2;
             break;
 
-            case 0xE0:  // jnz r[0] pc_offset
-            if (ctx->reg.r[0])
+            case 0xE0:
+            if (!(op1 & 0x01 && !ctx->reg.r[0]))    // jz r[0] pc_offset
+                ctx->reg.pc += op2;
+            else if ((op1 & 0x01) && ctx->reg.r[0])  // jnz r[0] pc_offset
                 ctx->reg.pc += op2;
             break;
 

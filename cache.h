@@ -31,3 +31,5 @@ struct __L2cache* getL2cache();
 struct __L1cache* getL1cache();
 int read_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char* out);
 void load_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char data);
+void flushL1(l1* cache);
+void flushL2(l2* cache);
