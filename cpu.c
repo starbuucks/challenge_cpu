@@ -46,6 +46,11 @@ void make_process(char * program, char core, char* argv[], int argc){
     free(new_ctx);
 }
 
+void init(){
+    setvbuf(stdin, 0, 2, 0);
+    setvbuf(stdout, 0, 2, 0);
+}
+
 int main(){
 
     int chk = 1;
@@ -58,9 +63,11 @@ int main(){
     int fd, i, len;
     char tmp;
 
+    init();
+
     llc = getL2cache();
 
-    if(0 < (fd = open("enc.program", O_RDONLY))){
+    if(0 < (fd = open("/home/starbuucks/enc.program", O_RDONLY))){
         read(fd, enc_program, 0x80);
         close(fd);
     }
@@ -106,7 +113,7 @@ int main(){
             len = (arc>3)?3:arc;
             for(i=0; i<len; i++){
                 printf("argv[%d] : ", i);
-                fflush(stdout);
+                //fflush(stdout);
                 read(0, arg[i], 0x10);
             }
             make_process(own_program, 2, arg, arc);

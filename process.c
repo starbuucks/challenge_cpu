@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 struct __L2cache* llc;
 
@@ -13,7 +14,7 @@ int valid_address(unsigned char addr){
 
 void error(char* from, char* description){
     printf("[Error] %s : %s\n", from ,description);
-    fflush(stdout);
+  //  fflush(stdout);
 }
 
 void write_memory(ctx* ctx, unsigned char addr, char data){
@@ -26,7 +27,7 @@ char read_memory(ctx* ctx, unsigned char addr){
     if (!valid_address(addr))
         error("read_memory", "invalid memory access");
     if (!read_cache(ctx->cache, llc, ctx->core, addr, &data)){
-        sleep(0.5); // cache miss
+        usleep(30 * 1000); // cache miss
         data = ctx->memory[addr];
         load_cache(ctx->cache, llc, ctx->core, addr, data);
     }
@@ -52,11 +53,18 @@ void print_register(ctx* ctx){
         printf("r%d : %02X\n", i, (unsigned char)ctx->reg.r[i]);
     }
     printf("pc : %02X\n", (unsigned char)ctx->reg.pc);
-    fflush(stdout);
+    //fflush(stdout);
 }
 
 int need_more_op(unsigned char op1){
     return (op1 >= 0x10 && op1 < 0x90) || (op1 >= 0xd0 && op1 < 0xf0);
+}
+
+void get_library(char* ptr, int len){
+    int i;
+    srand(time(0));
+    for(i=0; i<len; i++)
+        ptr[i] = (char)rand();
 }
 
 void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
@@ -68,16 +76,19 @@ void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
     ctx->cache = getL1cache();
     random_library = (char*)malloc(0x60);
 
-    load_memory(ctx, 0, program, strlen(program));
-    load_memory(ctx, 0x20, random_library, 0x60);
+    load_memory(ctx, 0, program, 0x80);
+    i = (strlen(program) > 0x20)? strlen(program) : 0x1f;
+    get_library(random_library, 0x80 - i - 1);
+    load_memory(ctx, i + 1, random_library, 0x80 - i - 1);  // shared memory
     free(random_library);
+
     for(i=0; i<argc; i++)
         load_memory(ctx, 0x80 + 0x10 * i, argv[i], 0x10);
 
     while(op1 = read_memory(ctx, ctx->reg.pc++)){
 
         if (need_more_op(op1)) op2 = read_memory(ctx, ctx->reg.pc++);
-        
+
         switch(op1 & 0xF0){
             case 0x00:  // exit
             return;
@@ -140,7 +151,7 @@ void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
             break;
 
             case 0xE0:
-            if (!(op1 & 0x01 && !ctx->reg.r[0]))    // jz r[0] pc_offset
+            if (!(op1 & 0x01) && !ctx->reg.r[0])    // jz r[0] pc_offset
                 ctx->reg.pc += op2;
             else if ((op1 & 0x01) && ctx->reg.r[0])  // jnz r[0] pc_offset
                 ctx->reg.pc += op2;
