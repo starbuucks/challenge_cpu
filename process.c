@@ -41,7 +41,8 @@ void load_memory(ctx* ctx, unsigned char addr, char* src, unsigned int len){
 }
 
 void clflush(ctx* ctx){
-    
+    flsuhL1(ctx->cache);
+    flushL2(llc);
 }
 
 void print_register(ctx* ctx){

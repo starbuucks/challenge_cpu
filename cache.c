@@ -4,22 +4,32 @@
 
 #include "cache.h"
 
-struct __L2cache* getL2cache(){
+void load_l1cache(l1* l1cache, unsigned int addr, char data);
+
+void flushL1(l1* cache){
     int i;
-    struct __L2cache* cache = (struct __L2cache*)malloc(sizeof(struct __L2cache));
+    for(i=0; i<0x40; i++){
+        cache->line[i].tag = '\xFF';
+    }
+}
+
+void flushL2(l2* cache){
+    int i;
     for(i=0; i<0x80; i++){
         cache->line[i].core = '\x00';
         cache->line[i].tag = '\xFF';
     }
+}
+
+struct __L2cache* getL2cache(){
+    struct __L2cache* cache = (struct __L2cache*)malloc(sizeof(struct __L2cache));
+    flushL2(cache);
     return cache;
 }
 
 struct __L1cache* getL1cache(){
-    int i;
     struct __L1cache* cache = (struct __L1cache*)malloc(sizeof(struct __L1cache));
-    for(i=0; i<0x40; i++){
-        cache->line[i].tag = '\xFF';
-    }
+    flushL1(cache);
     return cache;
 }
 
@@ -43,7 +53,7 @@ int read_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char* out
     idx = addr & 0x7F;
     if ((l2cache->line[idx].core & core) && (l2cache->line[idx].tag == tag)){   // cache hit
         *out = l2cache->line[idx].data;
-        load_l1cache(l1cache, addr, data);
+        load_l1cache(l1cache, addr, *out);
         return CACHE_HIT_L2;
     }
 
@@ -51,6 +61,8 @@ int read_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char* out
 }
 
 void load_l1cache(l1* l1cache, unsigned int addr, char data){
+
+    char tag, idx;
 
     tag = (addr & 0xC0) >> 6;
     idx = addr & 0x3F;
