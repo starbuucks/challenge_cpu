@@ -78,7 +78,7 @@ void load_cache(l1* l1cache, l2* l2cache, char core, unsigned int addr, char dat
     idx = addr & 0x7F;
     l2cache->line[idx].tag = tag;
     if(shared(addr))
-        l2cache->line[idx].core = 0x11;
+        l2cache->line[idx].core = 0x01 | 0x02;
     else
         l2cache->line[idx].core = core;
     l2cache->line[idx].data = data;

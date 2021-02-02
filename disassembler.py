@@ -4,7 +4,8 @@ ins_num = 0
 
 def print_instruction(ins, desc):
     global ins_num
-    print('%02x %-5s %s'%(ins_num, ins.encode('hex'), desc))
+    if __name__ == '__main__':
+        print('%02x %-5s %s'%(ins_num, ins.encode('hex'), desc))
     ins_num += len(ins.encode('hex')) / 2
 
 def _exit(n=0):
