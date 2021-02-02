@@ -58,6 +58,7 @@ def cache_attack_debug():
 def exploit():
 
     flag = ''
+    ex_start = time()
 
     for i in range(len(sample_flag)):
         print 'processing (%02d/%d)'%(i+1, len(sample_flag))
@@ -85,12 +86,21 @@ def exploit():
     
     s.sendlineafter('> ', '3')
 
+    ex_end = time()
+
+    print 'exploit time : %ds'%(int(ex_end - ex_start))
+    print 'flag: %s'%flag
+
 if __name__ == '__main__':
     if debug:
         s = process('./cpu')
         pause()
     else:
         s = remote('3.36.92.16', 9929)
+
     exploit()
-    s.interactive()
+
+    if debug:
+        s.interactive()
+
     s.close()

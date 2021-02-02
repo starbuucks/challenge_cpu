@@ -9,7 +9,7 @@
 #include "process.h"
 #include "cache.h"
 
-char Flag[] = "bob{s@mplflag}";
+char Flag[] = "bob{cache@tck}";
 struct __L2cache* llc;
 
 void welcome(){
