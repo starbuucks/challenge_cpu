@@ -166,4 +166,6 @@ void run_process(ctx* ctx, l2* l2cache, char* program, char* argv[], int argc){
             return;
         }
     }
+
+    free(ctx->cache);
 }

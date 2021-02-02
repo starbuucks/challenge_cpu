@@ -96,7 +96,7 @@ int main(){
             write(1, "[Caution] memory[0x20] ~ memory[0x7F] is for shared library\n", 60);
             write(1, "[Caution] Page fault is not implemented\n", 40);
             write(1, "Now start coding !!\n", 20);
-            write(1, "program code (in hex) : ", 25);
+            write(1, "program code (in hex) : ", 24);
             memset(buf, 0, 0x100);
             len = read(0, buf, 0x100);
             buf[len-1] = (buf[len-1]=='\n')? 0:buf[len-1];
@@ -128,6 +128,8 @@ int main(){
             break;
         }
     }
+
+    free(llc);
 
     write(1, "Good bye ~ \n", 12);
     return 0;

@@ -125,7 +125,7 @@ if __name__ == '__main__':
     program += _jz(0x10)
     program += _mov(1, 0)
     program += _mov(0, 2, op=2)
-    program += _jz(0x8)
+    program += _jz(0x6)
     program += _xor(0, 1)
     program += _mov(0, 0, op=2)
     program += _mov(0xa0, 0, op=1)
