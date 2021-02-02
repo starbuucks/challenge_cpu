@@ -27,7 +27,7 @@ char read_memory(ctx* ctx, unsigned char addr){
     if (!valid_address(addr))
         error("read_memory", "invalid memory access");
     if (!read_cache(ctx->cache, llc, ctx->core, addr, &data)){
-        usleep(30 * 1000); // cache miss
+        usleep(300 * 1000); // cache miss
         data = ctx->memory[addr];
         load_cache(ctx->cache, llc, ctx->core, addr, data);
     }
@@ -53,7 +53,7 @@ void print_register(ctx* ctx){
         printf("r%d : %02X\n", i, (unsigned char)ctx->reg.r[i]);
     }
     printf("pc : %02X\n", (unsigned char)ctx->reg.pc);
-    //fflush(stdout);
+    fflush(stdout);
 }
 
 int need_more_op(unsigned char op1){

