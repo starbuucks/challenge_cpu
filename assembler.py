@@ -1,4 +1,4 @@
-# python2 disassembler.py
+# python2 assembler.py
 
 ins_num = 0
 
